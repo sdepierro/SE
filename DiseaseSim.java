@@ -1,17 +1,17 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Vector;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+
+
 public class DiseaseSim extends JFrame implements ActionListener{
     
     String[] columnNames = {"Day", "# Susceptible", "# Infected", "# Immune", "# Dead", "Total Population"};
     Object[][] data = {};
     Vector<Double> dayArray = new Vector<>();
+    String[] infoArray = {"test", "test", "test", "test", "test", "test"};
         
     /*Declaration of all of the elements that are in
      * the user interface
@@ -31,7 +31,7 @@ public class DiseaseSim extends JFrame implements ActionListener{
     JLabel label5 = new JLabel("Population");
     JTextField textPopulation = new JTextField();
     
-    JLabel label6 = new JLabel("Number of people Infected");
+    JLabel label6 = new JLabel("Number of People Infected");
     JTextField textInfected = new JTextField();
     
     JTable table1 = new JTable(new DefaultTableModel(data, columnNames));
@@ -39,6 +39,7 @@ public class DiseaseSim extends JFrame implements ActionListener{
     JButton button30 = new JButton("Run 30 Days");
     JButton button1 = new JButton("Step One Day");
     JButton buttonReset = new JButton("Reset");
+    JButton graphButton = new JButton("See Graph");
     
     /*
      * Dimensions that allow the display to look identical in any
@@ -124,9 +125,15 @@ public class DiseaseSim extends JFrame implements ActionListener{
         button1.addActionListener(this);
         add(button1);
         
+        //Reset Button
         buttonReset.setBounds(rightButtonX, buttonDistanceFromTop, textFieldWidth, buttonHeight);
         buttonReset.addActionListener(this);
         add(buttonReset);
+        
+        //Graph Button
+        graphButton.setBounds(textFieldDistanceFromLeft*2, distanceFromTop*3, textFieldWidth, buttonHeight);
+        graphButton.addActionListener(this);
+        add(graphButton);
         
         setVisible(true);
         
@@ -176,7 +183,18 @@ public class DiseaseSim extends JFrame implements ActionListener{
             	}
             	else {
             		dayArray = Formula.MakeNextDay(dayArray, Double.valueOf(textRate.getText()), Double.valueOf(textPopulation.getText()), Double.valueOf(textDuration.getText()),Double.valueOf(textDie.getText()));
-            		model.addRow(dayArray);
+            		for(int j = 0; j < dayArray.size(); j++) {
+            			if(dayArray.get(j) == -1.0) {
+            				infoArray[j] = "Out of Bounds(Low)";
+            			}
+            			else if (dayArray.get(j) == -2.0) {
+            				infoArray[j] = "Out of Bounds(High)";
+            			}
+            			else {
+            				infoArray[j] = dayArray.get(j).toString();
+            			}
+            		}
+            		model.addRow(infoArray);
             	}
         	}
         }
@@ -199,7 +217,10 @@ public class DiseaseSim extends JFrame implements ActionListener{
         		model.addRow(dayArray);
             	for(int i=0; i<30 ;i++) {
             		dayArray = Formula.MakeNextDay(dayArray, Double.valueOf(textRate.getText()), Double.valueOf(textPopulation.getText()), Double.valueOf(textDuration.getText()),Double.valueOf(textDie.getText()));
-            		model.addRow(dayArray);
+            		for(int j = 0; j < dayArray.size(); j++) {
+            				infoArray[j] = dayArray.get(j).toString();
+            		}
+            		model.addRow(infoArray);
             	}
         	}
 
@@ -211,10 +232,23 @@ public class DiseaseSim extends JFrame implements ActionListener{
             model.setRowCount(0);
             days = 1;
         }
+        
+        if (e.getSource() == graphButton) {
+        	DefaultTableModel model = (DefaultTableModel) table1.getModel();
+        	
+        	SwingUtilities.invokeLater(() -> {
+                Graph ex = new Graph(model, 2, textImmune.getText(), textDie.getText(), textDuration.getText(), textRate.getText(), textPopulation.getText(), textInfected.getText());
+                ex.setVisible(true);
+            });
+        }
             
         }
         
     public static void main(String[] args) {
-        new DiseaseSim();   
-    }       
+        
+        new DiseaseSim();
+        
+    }
+        
 }
+
